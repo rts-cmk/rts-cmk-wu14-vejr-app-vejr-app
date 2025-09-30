@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { getForecast, getWeather } from "./utils/getWeather";
-import { formatTime } from "./utils/utils";
+import { getForecast, getWeather, getWeeklyForecast } from "./utils/getWeather";
+import { formatTime, formatDate } from "./utils/utils";
 import useLocation from "./utils/useLocation";
 
 export default function App() {
@@ -55,6 +55,12 @@ export default function App() {
   // Use getWeather hook with current params
   const { weather, loading: weatherLoading, error: weatherError } = getWeather(params);
   const { forecast, loading: forecastLoading, error: forecastError } = getForecast(params);
+  const { weeklyForecast, loading: weeklyLoading, error: weeklyError } = getWeeklyForecast({
+    latitude: params.latitude ?? weather?.coord?.lat,
+    longitude: params.longitude ?? weather?.coord?.lon,
+    lang: params.lang,
+    units: params.units
+  });
 
   // Debug logging
   console.log('Location:', location);
@@ -62,16 +68,41 @@ export default function App() {
   console.log('Weather:', weather);
   console.log('Weather Loading:', weatherLoading);
   console.log('Weather Error:', weatherError);
+
+  // forecast debugging
   console.log('Forecast:', forecast);
   console.log('Forecast Loading:', forecastLoading);
   console.log('Forecast Error:', forecastError);
 
-  if (location.loading || location.error || weatherLoading || weatherError || forecastLoading || forecastError) {
+  const isPrimaryLoading = location.loading || weatherLoading || forecastLoading;
+  const isPrimaryError = weatherError || forecastError;
+
+  if (isPrimaryLoading) {
     return (
       <div className="flex flex-col gap-4 min-h-screen items-center justify-center bg-slate-950 text-slate-300">
         <p>Vi prøver at hente vejret for dig. Vent venligst...</p>
         <span className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-400 border-t-transparent" aria-label="Indlæser lokation" />
 
+        <button
+          onClick={() => {
+            setParams({
+              city: "Copenhagen",
+              lang: "da",
+              units: "metric"
+            });
+          }}
+          className="p-2 rounded-full border border-indigo-500/40 bg-indigo-500/20 px-6 text-sm font-medium text-indigo-200 transition hover:border-indigo-400 hover:text-indigo-100 focus-visible:outline-offset-2 focus-visible:outline-indigo-400"
+        >
+          Gå tilbage
+        </button>
+      </div>
+    );
+  }
+
+  if (isPrimaryError) {
+    return (
+      <div className="flex flex-col gap-4 min-h-screen items-center justify-center bg-slate-950 text-slate-300">
+        <p>Vi kunne ikke hente vejret lige nu. Prøv venligst igen.</p>
         <button
           onClick={() => {
             setParams({
@@ -207,6 +238,7 @@ export default function App() {
             <section aria-label="Weekly overview" className="space-y-4">
               <header className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-100">Ugentlig oversigt</h2>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Næste 7 dage.</p>
                 <button
                   type="button"
                   className="text-xs font-medium text-indigo-200 transition hover:text-indigo-100 focus-visible:outline-offset-2 focus-visible:outline-indigo-300"
@@ -215,6 +247,32 @@ export default function App() {
                   Se alle
                 </button>
               </header>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {weeklyLoading && (
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4 text-center text-sm text-slate-400">
+                    Indlæser ugentlig forudsigelse...
+                  </div>
+                )}
+
+                {weeklyError && (
+                  <div className="rounded-xl border border-red-800/70 bg-red-900/30 p-4 text-center text-sm text-red-200">
+                    Kunne ikke hente ugentlig forudsigelse.
+                  </div>
+                )}
+
+                {weeklyForecast?.daily?.slice(0, 7).map((day) => (
+                  <div key={day.dt} className="flex flex-col items-center rounded-xl border border-slate-800 bg-slate-900/80 p-3">
+                    <p className="text-xs text-slate-400">{formatDate(new Date(day.dt * 1000))}</p>
+                    <img
+                      src={`https://openweathermap.org/img/wn/${day.weather[0].icon}.png`}
+                      alt={day.weather[0].description}
+                      className="h-10 w-10 my-1"
+                    />
+                    <p className="text-base text-slate-200">{day.temp.day.toFixed(1)}°C</p>
+                    <p className="text-xs text-slate-500">{day.temp.min.toFixed(0)}° / {day.temp.max.toFixed(0)}°</p>
+                  </div>
+                ))}
+              </div>
             </section>
           </section>
         </main>
