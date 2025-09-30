@@ -3,7 +3,8 @@ import "./css/main.css";
 
 import SearchInput from "./components/SearchInput";
 import WeatherInfo from "./components/WeatherInfo";
-import { API_KEY } from "./components/apiKey"
+
+const API_KEY = import.meta.env.VITE_API_KEY
 
 export default function App() {
   const [by, setBy] = useState(null);
