@@ -1,6 +1,7 @@
 * {
     box-sizing: border-box;
     padding: 0;
+    color: white;
     margin: 0;
 }
 body {
@@ -14,18 +15,36 @@ body {
     margin: 0 auto;
     height: 100vh;
 }
+/**/
+.weather-container {
+    padding: 15px 50px;
+    display: flex;
+    justify-content: space-between;
+}
 .city-input {
+    font-size: 18px;
     width: 100%;
     background-color: #22333B;
-    padding: 10px;
+    padding: 12px 10px;
     border-radius:5px;
     border: none;
     color: white;
+}
+.city-input::placeholder {
+    color: rgb(185, 185, 185)
 }
 .city-name {
     color: white;
     font-size: 32px;
 }
+.spanBy {
+    text-transform: capitalize;
+}
+.feels-like {
+    font-size: 20px;
+    color: rgb(185, 185, 185);
+    margin-bottom: 50px;
+}
 .city-temp {
-    color: white;
+    font-size: 48px;
 }
