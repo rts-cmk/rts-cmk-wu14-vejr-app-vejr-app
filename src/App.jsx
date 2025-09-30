@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getWeather } from "./utils/getWeather";
 import useLocation from "./utils/useLocation";
+import { formatDate } from "./utils/utils";
 
 export default function App() {
   const location = useLocation();
@@ -97,7 +98,8 @@ export default function App() {
         </div>
         </>
         )}
+
       </div>
-    </main>
+    </>
   );
 }
